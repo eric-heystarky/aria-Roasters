@@ -214,7 +214,9 @@
 
     var ticking = false;
     function update() {
-      btn.classList.toggle('ce-show', window.scrollY > window.innerHeight * 0.6);
+      // Appear after ~300px (or 60% of a short viewport), whichever is smaller.
+      var threshold = Math.min(window.innerHeight * 0.6, 300);
+      btn.classList.toggle('ce-show', window.scrollY > threshold);
       ticking = false;
     }
     window.addEventListener(
