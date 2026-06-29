@@ -26,6 +26,11 @@
 
     {%- render 'meta-tags' -%}
     {%- render 'stylesheets' -%}
+
+    {% comment %} Custom enhancements: motion + UI polish. Flag set before paint to avoid content flash. {% endcomment %}
+    <script>document.documentElement.classList.add('ce-anim');</script>
+    {{ 'custom-enhancements.css' | asset_url | stylesheet_tag }}
+
     {%- render 'fonts' -%}
     {%- render 'scripts' -%}
     {%- render 'theme-styles-variables' -%}
@@ -140,5 +145,8 @@
     {% if settings.quick_add or settings.mobile_quick_add %}
       {% render 'quick-add-modal' %}
     {% endif %}
+
+    {% comment %} Custom enhancements: scroll-reveal orchestration. {% endcomment %}
+    <script src="{{ 'custom-enhancements.js' | asset_url }}" defer></script>
   </body>
 </html>

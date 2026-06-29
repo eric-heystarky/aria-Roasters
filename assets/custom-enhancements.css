@@ -1,0 +1,185 @@
+/*
+  Custom Enhancements — Aria Roasters
+  Tasteful motion + UI polish layered on top of Horizon.
+  Uses theme CSS variables so it follows the store's colour scheme.
+  Fully disabled under prefers-reduced-motion.
+  ------------------------------------------------------------------ */
+
+:root {
+  --ce-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ce-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ce-dur: 720ms;
+  --ce-shadow: 0 18px 40px -18px rgb(var(--color-foreground-rgb, 0 0 0) / 0.28);
+}
+
+/* ------------------------------------------------------------------
+   1. Scroll reveal
+   JS adds .ce-reveal to eligible sections/blocks, then .ce-in when
+   they enter the viewport. The hidden state only applies once the
+   <html> element is flagged .ce-anim (set by an inline head script),
+   so visitors without JS always see content.
+   ------------------------------------------------------------------ */
+.ce-anim .ce-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  will-change: opacity, transform;
+  transition:
+    opacity var(--ce-dur) var(--ce-ease-out),
+    transform var(--ce-dur) var(--ce-ease-out);
+}
+
+.ce-anim .ce-reveal.ce-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Staggered children (e.g. product cards, gallery items) */
+.ce-anim .ce-stagger > * {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 640ms var(--ce-ease-out),
+    transform 640ms var(--ce-ease-out);
+}
+.ce-anim .ce-stagger.ce-in > * {
+  opacity: 1;
+  transform: none;
+}
+.ce-anim .ce-stagger.ce-in > *:nth-child(1) { transition-delay: 60ms; }
+.ce-anim .ce-stagger.ce-in > *:nth-child(2) { transition-delay: 130ms; }
+.ce-anim .ce-stagger.ce-in > *:nth-child(3) { transition-delay: 200ms; }
+.ce-anim .ce-stagger.ce-in > *:nth-child(4) { transition-delay: 270ms; }
+.ce-anim .ce-stagger.ce-in > *:nth-child(5) { transition-delay: 340ms; }
+.ce-anim .ce-stagger.ce-in > *:nth-child(n + 6) { transition-delay: 400ms; }
+
+/* ------------------------------------------------------------------
+   2. Product card hover — lift, soften shadow, gentle image zoom
+   ------------------------------------------------------------------ */
+.product-card {
+  transition:
+    transform 480ms var(--ce-ease),
+    box-shadow 480ms var(--ce-ease);
+}
+
+@media (hover: hover) {
+  .product-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--ce-shadow);
+  }
+
+  /* Zoom the card image without spilling outside its frame */
+  .product-card .product-card-gallery,
+  .product-card .card-gallery {
+    overflow: hidden;
+  }
+  .product-card .product-card-gallery img,
+  .product-card .card-gallery img {
+    transition: transform 900ms var(--ce-ease);
+  }
+  .product-card:hover .product-card-gallery img,
+  .product-card:hover .card-gallery img {
+    transform: scale(1.045);
+  }
+}
+
+/* ------------------------------------------------------------------
+   3. Buttons — subtle lift + light sheen sweep on hover
+   ------------------------------------------------------------------ */
+@media (hover: hover) {
+  .button:not(.button-unstyled):not(.button-shopify-xr) {
+    position: relative;
+    overflow: hidden;
+    transition:
+      transform 320ms var(--ce-ease),
+      box-shadow 320ms var(--ce-ease),
+      filter 320ms var(--ce-ease);
+  }
+
+  .button:not(.button-unstyled):not(.button-shopify-xr)::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-130%) skewX(-18deg);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(255 255 255 / 0.32),
+      transparent
+    );
+    transition: transform 720ms var(--ce-ease);
+    pointer-events: none;
+  }
+
+  .button:not(.button-unstyled):not(.button-shopify-xr):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px -12px rgb(var(--color-foreground-rgb, 0 0 0) / 0.4);
+  }
+  .button:not(.button-unstyled):not(.button-shopify-xr):hover::after {
+    transform: translateX(130%) skewX(-18deg);
+  }
+  .button:not(.button-unstyled):not(.button-shopify-xr):active {
+    transform: translateY(0);
+  }
+}
+
+/* ------------------------------------------------------------------
+   4. Animated underline for inline / nav links
+   ------------------------------------------------------------------ */
+@media (hover: hover) {
+  .header-menu a,
+  .menu-list a {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    background-size: 0% 1.5px;
+    transition: background-size 360ms var(--ce-ease);
+  }
+  .header-menu a:hover,
+  .menu-list a:hover {
+    background-size: 100% 1.5px;
+  }
+}
+
+/* ------------------------------------------------------------------
+   5. Media frames — slow zoom on hover for image/hero blocks
+   ------------------------------------------------------------------ */
+@media (hover: hover) {
+  .ce-zoom-frame {
+    overflow: hidden;
+  }
+  .ce-zoom-frame img,
+  .ce-zoom-frame svg,
+  .ce-zoom-frame video {
+    transition: transform 1100ms var(--ce-ease);
+  }
+  .ce-zoom-frame:hover img,
+  .ce-zoom-frame:hover video {
+    transform: scale(1.04);
+  }
+}
+
+/* ------------------------------------------------------------------
+   Accessibility — honour reduced-motion: strip every animation/anim state
+   ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  .ce-anim .ce-reveal,
+  .ce-anim .ce-reveal.ce-in,
+  .ce-anim .ce-stagger > *,
+  .ce-anim .ce-stagger.ce-in > * {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .product-card,
+  .product-card .product-card-gallery img,
+  .product-card .card-gallery img,
+  .button::after,
+  .ce-zoom-frame img,
+  .ce-zoom-frame video {
+    transition: none !important;
+  }
+  .product-card:hover {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+}
