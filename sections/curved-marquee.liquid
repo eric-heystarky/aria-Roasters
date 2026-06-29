@@ -1,0 +1,200 @@
+{% comment %}
+  Curved Marquee — custom section.
+  Scrolling text that flows along a gentle wave (SVG textPath).
+  Transparent background; colour follows the theme foreground by default.
+  Seamless infinite loop via a small per-instance rAF script.
+{% endcomment %}
+
+{%- liquid
+  assign cm_text = section.settings.text | default: 'ARIA ROASTERS'
+  assign cm_sep = section.settings.separator | default: '★'
+  assign cm_color = section.settings.text_color
+  assign repeats = 10
+-%}
+
+{%- style -%}
+  .curved-marquee-{{ section.id }} {
+    background: {{ section.settings.background_color | default: 'transparent' }};
+    padding-block: {{ section.settings.padding_top }}px {{ section.settings.padding_bottom }}px;
+    overflow: hidden;
+    width: 100%;
+  }
+  .curved-marquee-{{ section.id }} svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .curved-marquee-{{ section.id }} text {
+    font-family: var(--font-h1--family, inherit);
+    font-weight: {{ section.settings.font_weight }};
+    font-size: {{ section.settings.font_size }}px;
+    letter-spacing: {{ section.settings.letter_spacing }}px;
+    text-transform: uppercase;
+    fill: {% if cm_color != blank %}{{ cm_color }}{% else %}rgb(var(--color-foreground-rgb, 0 0 0)){% endif %};
+  }
+  .curved-marquee-{{ section.id }} .cm-star {
+    fill: {% if section.settings.star_color != blank %}{{ section.settings.star_color }}{% else %}rgb(var(--color-foreground-rgb, 0 0 0) / 0.55){% endif %};
+  }
+{%- endstyle -%}
+
+<div class="curved-marquee curved-marquee-{{ section.id }}">
+  <svg viewBox="0 0 1200 320" role="img" aria-label="{{ cm_text }}" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <path
+        id="cm-path-{{ section.id }}"
+        fill="none"
+        d="M -1000,140 L 0,140 Q 600,270 1200,140 L 2200,140"
+      />
+    </defs>
+    <text>
+      <textPath id="cm-text-{{ section.id }}" href="#cm-path-{{ section.id }}" startOffset="0">{% for i in (1..repeats) %}{{ cm_text }} <tspan class="cm-star">{{ cm_sep }}</tspan> {% endfor %}</textPath>
+    </text>
+  </svg>
+</div>
+
+<script>
+  (function () {
+    var text = document.getElementById('cm-text-{{ section.id }}');
+    if (!text) return;
+
+    var REPEATS = {{ repeats }};
+    var SPEED = {{ section.settings.scroll_speed }}; // path units per second
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function run() {
+      var total = text.getComputedTextLength();
+      if (!total) {
+        // Font not measured yet — try again next frame.
+        return window.requestAnimationFrame(run);
+      }
+      var unit = total / REPEATS; // length of one "TEXT ★ " repetition
+      if (reduce) {
+        text.setAttribute('startOffset', 0);
+        return;
+      }
+      var offset = 0;
+      var last = null;
+      function frame(t) {
+        if (last === null) last = t;
+        var dt = (t - last) / 1000;
+        last = t;
+        offset -= SPEED * dt;
+        if (offset <= 0) offset += unit; // wrap by one repeat → seamless leftward flow
+        text.setAttribute('startOffset', offset);
+        window.requestAnimationFrame(frame);
+      }
+      window.requestAnimationFrame(frame);
+    }
+
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function () {
+        window.requestAnimationFrame(run);
+      });
+    } else {
+      window.requestAnimationFrame(run);
+    }
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Curved Marquee",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "text",
+      "label": "Text",
+      "default": "ARIA ROASTERS"
+    },
+    {
+      "type": "text",
+      "id": "separator",
+      "label": "Separator symbol",
+      "default": "★"
+    },
+    {
+      "type": "range",
+      "id": "font_size",
+      "min": 24,
+      "max": 96,
+      "step": 2,
+      "unit": "px",
+      "label": "Font size",
+      "default": 56
+    },
+    {
+      "type": "select",
+      "id": "font_weight",
+      "label": "Font weight",
+      "options": [
+        { "value": "400", "label": "Regular" },
+        { "value": "600", "label": "Semibold" },
+        { "value": "700", "label": "Bold" }
+      ],
+      "default": "700"
+    },
+    {
+      "type": "range",
+      "id": "letter_spacing",
+      "min": 0,
+      "max": 10,
+      "step": 0.5,
+      "unit": "px",
+      "label": "Letter spacing",
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "scroll_speed",
+      "min": 20,
+      "max": 300,
+      "step": 10,
+      "unit": "px/s",
+      "label": "Scroll speed",
+      "default": 90
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text colour (blank = theme default)"
+    },
+    {
+      "type": "color",
+      "id": "star_color",
+      "label": "Separator colour (blank = theme default)"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background (blank = transparent)"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 20
+    }
+  ],
+  "presets": [
+    {
+      "name": "Curved Marquee"
+    }
+  ]
+}
+{% endschema %}
