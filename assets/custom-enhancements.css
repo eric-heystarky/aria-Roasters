@@ -159,6 +159,69 @@
 }
 
 /* ------------------------------------------------------------------
+   6. Hero entrance — first content section reveals on page load.
+   JS collects the headings/text/buttons, assigns each a --ce-i index,
+   then adds .ce-go on the next frame to play a staggered blur-in.
+   ------------------------------------------------------------------ */
+.ce-anim .ce-hero-entrance .ce-hero-item {
+  opacity: 0;
+  transform: translateY(22px);
+  filter: blur(8px);
+  transition:
+    opacity 820ms var(--ce-ease-out),
+    transform 820ms var(--ce-ease-out),
+    filter 820ms var(--ce-ease-out);
+  transition-delay: calc(var(--ce-i, 0) * 110ms + 120ms);
+}
+.ce-anim .ce-hero-entrance.ce-go .ce-hero-item {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+/* ------------------------------------------------------------------
+   7. Heading clip reveal — headings in revealed sections wipe upward.
+   ------------------------------------------------------------------ */
+.ce-anim .ce-reveal .ce-head-reveal {
+  clip-path: inset(0 0 110% 0);
+  transform: translateY(12px);
+  transition:
+    clip-path 900ms var(--ce-ease),
+    transform 900ms var(--ce-ease);
+  transition-delay: 120ms;
+}
+.ce-anim .ce-reveal.ce-in .ce-head-reveal {
+  clip-path: inset(0 0 -10% 0);
+  transform: none;
+}
+
+/* ------------------------------------------------------------------
+   8. Sticky header — gains a soft blur + shadow once the page scrolls.
+   ------------------------------------------------------------------ */
+#header-group {
+  transition:
+    box-shadow 420ms var(--ce-ease),
+    backdrop-filter 420ms var(--ce-ease),
+    background-color 420ms var(--ce-ease);
+}
+.ce-scrolled #header-group {
+  box-shadow: 0 6px 26px -14px rgb(var(--color-foreground-rgb, 0 0 0) / 0.34);
+  backdrop-filter: saturate(1.1) blur(10px);
+  background-color: rgb(var(--color-background-rgb, 255 255 255) / 0.86);
+}
+
+/* ------------------------------------------------------------------
+   9. Parallax — hero media drifts slightly slower than the scroll.
+   Scaled up so the drift never exposes an edge gap. Desktop only.
+   ------------------------------------------------------------------ */
+@media (min-width: 750px) and (prefers-reduced-motion: no-preference) {
+  .ce-parallax {
+    scale: 1.12;
+    will-change: transform;
+  }
+}
+
+/* ------------------------------------------------------------------
    Accessibility — honour reduced-motion: strip every animation/anim state
    ------------------------------------------------------------------ */
 @media (prefers-reduced-motion: reduce) {
@@ -181,5 +244,17 @@
   .product-card:hover {
     transform: none !important;
     box-shadow: none !important;
+  }
+  .ce-anim .ce-hero-entrance .ce-hero-item,
+  .ce-anim .ce-reveal .ce-head-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    clip-path: none !important;
+    transition: none !important;
+  }
+  .ce-parallax {
+    scale: 1 !important;
+    transform: none !important;
   }
 }
