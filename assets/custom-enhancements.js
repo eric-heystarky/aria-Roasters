@@ -74,12 +74,28 @@
   /* ---------------------------------------------------------------
      Scroll reveal — sections fade/rise in; grids stagger; headings clip.
      --------------------------------------------------------------- */
+  // A transform/will-change on an ancestor becomes the containing block for
+  // position:fixed descendants — which would break any fixed/sticky bar inside
+  // a revealed section. Detect those sections so we can leave them untouched.
+  function hasFixedDescendant(el) {
+    if (el.querySelector('[class*="announcement-bar"], [class*="ai-announcement"]')) {
+      return true;
+    }
+    var nodes = el.querySelectorAll('*');
+    for (var i = 0; i < nodes.length; i++) {
+      var pos = window.getComputedStyle(nodes[i]).position;
+      if (pos === 'fixed' || pos === 'sticky') return true;
+    }
+    return false;
+  }
+
   function initScrollReveal(sections) {
     var skip = /header|announcement|footer|menu-drawer|cart/i;
     var targets = sections.filter(function (el, i) {
       if (i === 0) return false;
       if (el.classList.contains('ce-hero-entrance')) return false;
       if (skip.test(el.id || '')) return false;
+      if (hasFixedDescendant(el)) return false;
       return true;
     });
     if (!targets.length) return;
