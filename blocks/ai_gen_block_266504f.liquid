@@ -1,0 +1,294 @@
+{% doc %}
+  @prompt
+    Create a scrolling/marquee announcement bar that continuously scrolls text horizontally across the top of the page. The announcement text should be "Small-batch roasted in Melbourne — crafted for your everyday cup. Free shipping on orders over $60." The scrolling should be smooth and continuous, looping seamlessly.
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-marquee-announcement-{{ ai_gen_id }} {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    background-color: {{ block.settings.background_color }};
+    color: {{ block.settings.text_color }};
+    padding: {{ block.settings.vertical_padding }}px 0;
+    position: relative;
+  }
+
+  .ai-marquee-announcement-track-{{ ai_gen_id }} {
+    display: flex;
+    width: max-content;
+    animation: ai-marquee-scroll-{{ ai_gen_id }} {{ block.settings.scroll_speed }}s linear infinite;
+  }
+
+  .ai-marquee-announcement-content-{{ ai_gen_id }} {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    padding: 0 {{ block.settings.spacing_between }}px;
+    font-size: {{ block.settings.font_size }}px;
+    font-weight: {{ block.settings.font_weight }};
+    letter-spacing: {{ block.settings.letter_spacing }}px;
+  }
+
+  @keyframes ai-marquee-scroll-{{ ai_gen_id }} {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .ai-marquee-announcement-{{ ai_gen_id }}:hover .ai-marquee-announcement-track-{{ ai_gen_id }} {
+    {% if block.settings.pause_on_hover %}
+      animation-play-state: paused;
+    {% endif %}
+  }
+
+  .ai-marquee-announcement-separator-{{ ai_gen_id }} {
+    display: inline-block;
+    margin: 0 {{ block.settings.separator_spacing }}px;
+    {% if block.settings.separator_type == 'dot' %}
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background-color: {{ block.settings.text_color }};
+    {% elsif block.settings.separator_type == 'dash' %}
+      width: 16px;
+      height: 2px;
+      background-color: {{ block.settings.text_color }};
+    {% elsif block.settings.separator_type == 'star' %}
+      font-size: {{ block.settings.font_size }}px;
+    {% endif %}
+  }
+{% endstyle %}
+
+<marquee-announcement-{{ ai_gen_id }}
+  class="ai-marquee-announcement-{{ ai_gen_id }}"
+  {{ block.shopify_attributes }}
+>
+  <div class="ai-marquee-announcement-track-{{ ai_gen_id }}">
+    {% for i in (1..2) %}
+      <div class="ai-marquee-announcement-content-{{ ai_gen_id }}">
+        {{ block.settings.announcement_text }}
+        {% if block.settings.show_separator %}
+          <span class="ai-marquee-announcement-separator-{{ ai_gen_id }}">
+            {% if block.settings.separator_type == 'star' %}★{% endif %}
+          </span>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</marquee-announcement-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class MarqueeAnnouncement{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+      }
+
+      connectedCallback() {
+        this.track = this.querySelector('.ai-marquee-announcement-track-{{ ai_gen_id }}');
+        this.content = this.querySelector('.ai-marquee-announcement-content-{{ ai_gen_id }}');
+        
+        if (this.track && this.content) {
+          this.duplicateContent();
+        }
+      }
+
+      duplicateContent() {
+        const contentWidth = this.content.offsetWidth;
+        const containerWidth = this.offsetWidth;
+        const repetitionsNeeded = Math.ceil(containerWidth / contentWidth) + 2;
+        
+        const currentChildren = this.track.children.length;
+        const additionalNeeded = repetitionsNeeded - currentChildren;
+        
+        if (additionalNeeded > 0) {
+          for (let i = 0; i < additionalNeeded; i++) {
+            const clone = this.content.cloneNode(true);
+            this.track.appendChild(clone);
+          }
+        }
+      }
+    }
+
+    customElements.define('marquee-announcement-{{ ai_gen_id }}', MarqueeAnnouncement{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Scrolling announcement",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "textarea",
+      "id": "announcement_text",
+      "label": "Announcement text",
+      "default": "Small-batch roasted in Melbourne — crafted for your everyday cup. Free shipping on orders over $60."
+    },
+    {
+      "type": "header",
+      "content": "Animation"
+    },
+    {
+      "type": "range",
+      "id": "scroll_speed",
+      "label": "Scroll speed",
+      "min": 10,
+      "max": 60,
+      "step": 5,
+      "unit": "s",
+      "default": 30,
+      "info": "Lower values = faster scrolling"
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_on_hover",
+      "label": "Pause on hover",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Separator"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_separator",
+      "label": "Show separator",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "separator_type",
+      "label": "Separator type",
+      "options": [
+        {
+          "value": "dot",
+          "label": "Dot"
+        },
+        {
+          "value": "dash",
+          "label": "Dash"
+        },
+        {
+          "value": "star",
+          "label": "Star"
+        }
+      ],
+      "default": "dash"
+    },
+    {
+      "type": "range",
+      "id": "separator_spacing",
+      "label": "Separator spacing",
+      "min": 10,
+      "max": 50,
+      "step": 5,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "spacing_between",
+      "label": "Text spacing",
+      "min": 20,
+      "max": 100,
+      "step": 10,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "range",
+      "id": "desktop_width_percent",
+      "label": "Desktop width",
+      "min": 50,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "vertical_padding",
+      "label": "Vertical padding",
+      "min": 5,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "font_size",
+      "label": "Font size",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "select",
+      "id": "font_weight",
+      "label": "Font weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi-bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "400"
+    },
+    {
+      "type": "range",
+      "id": "letter_spacing",
+      "label": "Letter spacing",
+      "min": 0,
+      "max": 2,
+      "step": 0.1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "Scrolling announcement"
+    }
+  ]
+}
+{% endschema %}

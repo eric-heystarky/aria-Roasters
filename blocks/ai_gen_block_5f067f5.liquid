@@ -1,0 +1,192 @@
+{% doc %}
+  @prompt
+    Create a sticky announcement bar that stays fixed at the top of the page as users scroll. The bar should have continuously scrolling/marquee text that loops horizontally. The text content, scroll speed, background color, and text color should all be customizable through theme settings.
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-announcement-bar-{{ ai_gen_id }} {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: {{ block.settings.background_color }};
+    color: {{ block.settings.text_color }};
+    z-index: 1000;
+    overflow: hidden;
+    display: block;
+  }
+
+  .ai-announcement-bar-inner-{{ ai_gen_id }} {
+    display: flex;
+    align-items: center;
+    height: {{ block.settings.bar_height }}px;
+  }
+
+  .ai-announcement-bar-marquee-{{ ai_gen_id }} {
+    display: flex;
+    white-space: nowrap;
+    animation: ai-announcement-scroll-{{ ai_gen_id }} {{ block.settings.scroll_speed }}s linear infinite;
+  }
+
+  .ai-announcement-bar-text-{{ ai_gen_id }} {
+    padding: 0 40px;
+    font-size: {{ block.settings.font_size }}px;
+    font-weight: {{ block.settings.font_weight }};
+  }
+
+  @keyframes ai-announcement-scroll-{{ ai_gen_id }} {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .ai-announcement-bar-marquee-{{ ai_gen_id }}:hover {
+    animation-play-state: {{ block.settings.pause_on_hover | default: false | if: 'paused', 'running' }};
+  }
+{% endstyle %}
+
+<announcement-bar-{{ ai_gen_id }} class="ai-announcement-bar-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <div class="ai-announcement-bar-inner-{{ ai_gen_id }}">
+    <div class="ai-announcement-bar-marquee-{{ ai_gen_id }}">
+      {% for i in (1..20) %}
+        <div class="ai-announcement-bar-text-{{ ai_gen_id }}">
+          {{ block.settings.announcement_text }}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</announcement-bar-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class AnnouncementBar{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+      }
+
+      connectedCallback() {
+        this.adjustPagePadding();
+      }
+
+      adjustPagePadding() {
+        const barHeight = this.offsetHeight;
+        if (barHeight > 0) {
+          document.body.style.paddingTop = barHeight + 'px';
+        }
+      }
+
+      disconnectedCallback() {
+        document.body.style.paddingTop = '';
+      }
+    }
+
+    customElements.define('announcement-bar-{{ ai_gen_id }}', AnnouncementBar{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Sticky announcement bar",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "announcement_text",
+      "label": "Announcement text",
+      "default": "Free shipping on orders over $50"
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "bar_height",
+      "label": "Bar height",
+      "min": 30,
+      "max": 80,
+      "step": 5,
+      "unit": "px",
+      "default": 45
+    },
+    {
+      "type": "range",
+      "id": "font_size",
+      "label": "Font size",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "select",
+      "id": "font_weight",
+      "label": "Font weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi-bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "400"
+    },
+    {
+      "type": "header",
+      "content": "Animation"
+    },
+    {
+      "type": "range",
+      "id": "scroll_speed",
+      "label": "Scroll speed",
+      "min": 10,
+      "max": 60,
+      "step": 5,
+      "unit": "s",
+      "default": 30
+    },
+    {
+      "type": "checkbox",
+      "id": "pause_on_hover",
+      "label": "Pause on hover",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "Sticky announcement bar"
+    }
+  ]
+}
+{% endschema %}
