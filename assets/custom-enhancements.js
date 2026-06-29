@@ -178,8 +178,45 @@
     update();
   }
 
+  /* ---------------------------------------------------------------
+     Back-to-top — reveal after scrolling a screen, smooth-scroll up.
+     Works regardless of reduced-motion (scroll behaviour adapts).
+     --------------------------------------------------------------- */
+  function initBackToTop() {
+    var btn = document.querySelector('.ce-to-top');
+    if (!btn) return;
+
+    // It ships with [hidden] so it never shows for no-JS visitors; enable it now.
+    btn.removeAttribute('hidden');
+
+    btn.addEventListener('click', function () {
+      window.scrollTo({
+        top: 0,
+        behavior: reduceMotion.matches ? 'auto' : 'smooth'
+      });
+    });
+
+    var ticking = false;
+    function update() {
+      btn.classList.toggle('ce-show', window.scrollY > window.innerHeight * 0.6);
+      ticking = false;
+    }
+    window.addEventListener(
+      'scroll',
+      function () {
+        if (!ticking) {
+          ticking = true;
+          window.requestAnimationFrame(update);
+        }
+      },
+      { passive: true }
+    );
+    update();
+  }
+
   function init() {
     initHeaderScrollState();
+    initBackToTop();
 
     // Motion-heavy effects respect the reduced-motion preference.
     if (reduceMotion.matches) return;

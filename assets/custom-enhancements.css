@@ -222,6 +222,64 @@
 }
 
 /* ------------------------------------------------------------------
+   10. Back-to-top button — appears after scrolling, smooth-scrolls up.
+   Uses the primary-button palette (foreground bg / background icon).
+   ------------------------------------------------------------------ */
+.ce-to-top {
+  position: fixed;
+  right: clamp(16px, 3vw, 32px);
+  bottom: clamp(16px, 3vw, 32px);
+  z-index: 50;
+  inline-size: 46px;
+  block-size: 46px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  color: rgb(var(--color-background-rgb, 255 255 255));
+  background: rgb(var(--color-foreground-rgb, 0 0 0));
+  box-shadow: 0 10px 26px -10px rgb(var(--color-foreground-rgb, 0 0 0) / 0.45);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(14px) scale(0.9);
+  transition:
+    opacity 380ms var(--ce-ease),
+    transform 380ms var(--ce-ease),
+    visibility 380ms var(--ce-ease),
+    box-shadow 280ms var(--ce-ease);
+}
+
+.ce-to-top[hidden] {
+  display: grid; /* keep it animatable; JS toggles .ce-show, not [hidden] visibility */
+}
+
+.ce-to-top.ce-show {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+@media (hover: hover) {
+  .ce-to-top:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 16px 30px -10px rgb(var(--color-foreground-rgb, 0 0 0) / 0.55);
+  }
+}
+
+.ce-to-top:active {
+  transform: translateY(0) scale(0.96);
+}
+
+.ce-to-top svg {
+  transition: transform 280ms var(--ce-ease);
+}
+.ce-to-top:hover svg {
+  transform: translateY(-2px);
+}
+
+/* ------------------------------------------------------------------
    Accessibility — honour reduced-motion: strip every animation/anim state
    ------------------------------------------------------------------ */
 @media (prefers-reduced-motion: reduce) {
@@ -255,6 +313,13 @@
   }
   .ce-parallax {
     scale: 1 !important;
+    transform: none !important;
+  }
+  .ce-to-top,
+  .ce-to-top svg {
+    transition: none !important;
+  }
+  .ce-to-top.ce-show {
     transform: none !important;
   }
 }

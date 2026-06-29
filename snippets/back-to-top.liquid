@@ -1,0 +1,20 @@
+{% comment %}
+  Back-to-top button — custom enhancement.
+  Styled in assets/custom-enhancements.css, driven by custom-enhancements.js.
+{% endcomment %}
+<button
+  type="button"
+  class="ce-to-top"
+  aria-label="{{ 'accessibility.back_to_top' | t | default: 'Back to top' }}"
+  hidden
+>
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true" focusable="false">
+    <path
+      d="M12 19V5M12 5l-6 6M12 5l6 6"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+</button>
